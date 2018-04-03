@@ -140,7 +140,10 @@
         app:bl_arrowPosition="16dp"
         app:bl_arrowWidth="8dp"
         app:bl_bubbleColor="@android:color/holo_green_light"
-        app:bl_cornersRadius="6dp">
+        app:bl_cornersRadius="6dp"
+        app:bl_strokeWidth="1dp"
+        app:bl_arrowRadius="6dp"
+        app:bl_strokeColor="@color/colorPrimary">
 
         <TextView
             android:layout_width="wrap_content"
@@ -157,12 +160,15 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
         android:padding="8dp"
-        app:bl_arrowDirection="bottom_center"
-        app:bl_arrowHeight="8dp"
+        app:bl_arrowDirection="right_center"
+        app:bl_arrowHeight="16dp"
         app:bl_arrowPosition="16dp"
         app:bl_arrowWidth="8dp"
         app:bl_bubbleColor="@android:color/holo_green_light"
-        app:bl_cornersRadius="6dp">
+        app:bl_cornersRadius="6dp"
+        app:bl_arrowRadius="8dp"
+        app:bl_strokeWidth="1dp"
+        app:bl_strokeColor="@color/colorPrimaryDark">
 
         <TextView
             android:layout_width="wrap_content"
@@ -179,13 +185,13 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
         android:padding="8dp"
-        app:bl_arrowDirection="top_center"
-        app:bl_arrowHeight="8dp"
-        app:bl_arrowPosition="16dp"
-        app:bl_arrowWidth="16dp"
+        app:bl_arrowDirection="left_center"
+        app:bl_arrowHeight="16dp"
+        app:bl_arrowWidth="8dp"
         app:bl_bubbleColor="@android:color/holo_green_light"
-        app:bl_cornersRadius="5dp"
+        app:bl_cornersRadius="6dp"
         app:bl_strokeWidth="1dp"
+        app:bl_arrowRadius="2dp"
         app:bl_strokeColor="@color/colorAccent">
 
         <TextView

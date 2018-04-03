@@ -27,7 +27,7 @@ class Bubble extends Drawable {
     private float mStrokeWidth;
     private float mArrowRadius;
     
-    public Bubble(RectF rect, float arrowWidth, float cornersRadius, float arrowHeight, float arrowPosition, float strokeWidth, int strokeColor, int bubbleColor, ArrowDirection arrowDirection) {
+    public Bubble(RectF rect, float arrowWidth, float cornersRadius, float arrowHeight, float arrowPosition, float strokeWidth, int strokeColor, int bubbleColor, ArrowDirection arrowDirection, float arrowRadius) {
         this.mRect = rect;
         
         this.mArrowWidth = arrowWidth;
@@ -35,11 +35,17 @@ class Bubble extends Drawable {
         this.mArrowHeight = arrowHeight;
         this.mArrowPosition = arrowPosition;
         this.mStrokeWidth = strokeWidth;
-        mArrowRadius = mCornersRadius /2;
+        mArrowRadius = arrowRadius;
+        if(mArrowRadius > Math.min(mArrowHeight, mArrowWidth)) {
+            mArrowRadius = 0;
+        }
         
         mPaint.setColor(bubbleColor);
         
         if (strokeWidth > 0) {
+            //Correction for radius
+            mArrowRadius = Math.max(0, mArrowRadius - strokeWidth / 2);
+            
             mStrokePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
             mStrokePaint.setColor(strokeColor);
             mStrokePath = new Path();
@@ -172,10 +178,37 @@ class Bubble extends Drawable {
         
         path.lineTo(rect.left + mArrowWidth + strokeWidth, mArrowHeight + mArrowPosition - (strokeWidth / 2));
         
-        path.lineTo(rect.left + strokeWidth + strokeWidth, mArrowPosition + mArrowHeight / 2);
+        //Draw Arrow
+        float baseY = rect.top + mArrowHeight + mArrowPosition;
+        PointF A = new PointF(rect.left + mArrowWidth + strokeWidth, baseY - (strokeWidth / 2));
+        PointF C = new PointF(rect.left + strokeWidth, baseY - mArrowHeight / 2);
+        PointF MidAB = new PointF(rect.left + mArrowWidth + strokeWidth, baseY - mArrowHeight / 2);
         
+        double cosAlpha = distance(A, MidAB) / distance(A, C);
+        double alpha = Math.acos(cosAlpha);
+        double tipAlpha = Math.toRadians((180 - 2 * Math.toDegrees(alpha)) / 2);
+        float distCXp = (float) (mArrowRadius / Math.cos(tipAlpha));
+        float distCYp = (float) (mArrowRadius * Math.cos(tipAlpha));
+        float distYYp = (float) (Math.sin(tipAlpha) * mArrowRadius);
         
-        path.lineTo(rect.left + mArrowWidth + strokeWidth, mArrowPosition + (strokeWidth / 2));
+        float r = (float) (Math.tan(tipAlpha) * mArrowRadius);
+        
+        PointF circleCenter = new PointF(rect.left + distCXp + strokeWidth, C.y);
+        
+        path.lineTo(rect.left + distCYp + strokeWidth, circleCenter.y + distYYp);
+        
+        float angle = (float) (180 - 90 - Math.toDegrees(alpha));
+        
+        path.arcTo(new RectF(
+                        circleCenter.x - r,
+                        circleCenter.y - distYYp,
+                        circleCenter.x,
+                        circleCenter.y + distYYp
+                ),
+                90 + angle, 180 - 2 * angle);
+        
+        path.lineTo(rect.left + mArrowWidth + strokeWidth, mArrowPosition + strokeWidth / 2);
+        //endArrow
         
         path.lineTo(rect.left + mArrowWidth + strokeWidth, rect.top + mCornersRadius + strokeWidth);
         
@@ -210,28 +243,25 @@ class Bubble extends Drawable {
         path.moveTo(rect.left + Math.min(mArrowPosition, mCornersRadius) + strokeWidth, rect.top + mArrowHeight + strokeWidth);
         path.lineTo(rect.left + mArrowPosition + (strokeWidth / 2), rect.top + mArrowHeight + strokeWidth);
         
-        float baseX = (int) (rect.left + mArrowPosition);
+        float baseX = rect.left + mArrowPosition;
         
         //Draw Arrow
         PointF A = new PointF(baseX + strokeWidth / 2, rect.top + mArrowHeight + strokeWidth);
         PointF C = new PointF(baseX + mArrowWidth / 2, rect.top + strokeWidth);
+        PointF MidAB = new PointF(baseX + mArrowWidth / 2, rect.top + mArrowHeight + strokeWidth);
         
-        float actualRadius = mArrowRadius +  strokeWidth /2;
-        //middle of AB
-        PointF X = new PointF(baseX + mArrowWidth / 2, rect.top + mArrowHeight + strokeWidth);
-        
-        double cosAlpha = distance(A, X) / distance(A, C);
+        double cosAlpha = distance(A, MidAB) / distance(A, C);
         double alpha = Math.acos(cosAlpha);
-        double tipAlpha = Math.toRadians((180 - 2 * Math.toDegrees(alpha))/ 2);
-        float distCXp = (float) (actualRadius / Math.cos(tipAlpha));
-        float distCYp = (float) (actualRadius * Math.cos(tipAlpha));
-        float distYYp = (float) (Math.sin(tipAlpha) * actualRadius);
+        double tipAlpha = Math.toRadians((180 - 2 * Math.toDegrees(alpha)) / 2);
+        float distCXp = (float) (mArrowRadius / Math.cos(tipAlpha));
+        float distCYp = (float) (mArrowRadius * Math.cos(tipAlpha));
+        float distYYp = (float) (Math.sin(tipAlpha) * mArrowRadius);
         
-        float r = (float) (Math.tan(tipAlpha) * actualRadius);
+        float r = (float) (Math.tan(tipAlpha) * mArrowRadius);
         
         PointF circleCenter = new PointF(C.x, rect.top + distCXp + strokeWidth);
         
-        path.lineTo(circleCenter.x - distYYp, distCYp+ strokeWidth);
+        path.lineTo(circleCenter.x - distYYp, distCYp + strokeWidth);
         
         float angle = (float) (180 - 90 - Math.toDegrees(alpha));
         
@@ -241,9 +271,9 @@ class Bubble extends Drawable {
                         circleCenter.x + distYYp,
                         circleCenter.y),
                 180 + angle, 180 - 2 * angle);
-
-        path.lineTo(rect.left + mArrowWidth + mArrowPosition - (strokeWidth /2), rect.top + mArrowHeight + strokeWidth);
+        path.lineTo(rect.left + mArrowWidth + mArrowPosition - (strokeWidth / 2), rect.top + mArrowHeight + strokeWidth);
         //endArrow
+        
         path.lineTo(rect.right - mCornersRadius - strokeWidth, rect.top + mArrowHeight + strokeWidth);
         
         path.arcTo(new RectF(rect.right - mCornersRadius,
@@ -299,8 +329,39 @@ class Bubble extends Drawable {
                 rect.top + strokeWidth, rect.right - mArrowWidth - strokeWidth, mCornersRadius + rect.top), 270, 90);
         
         path.lineTo(rect.right - mArrowWidth - strokeWidth, mArrowPosition + (strokeWidth / 2));
-        path.lineTo(rect.right - strokeWidth - strokeWidth, mArrowPosition + mArrowHeight / 2);
-        path.lineTo(rect.right - mArrowWidth - strokeWidth, mArrowPosition + mArrowHeight - (strokeWidth / 2));
+        
+        //Draw Arrow
+        float baseY = rect.top + mArrowPosition;
+        PointF A = new PointF(rect.right - mArrowWidth - strokeWidth, baseY + (strokeWidth / 2));
+        PointF C = new PointF(rect.right - strokeWidth, baseY + mArrowHeight / 2);
+        PointF MidAB = new PointF(rect.right - mArrowWidth - strokeWidth, baseY + mArrowHeight / 2);
+        
+        double cosAlpha = distance(A, MidAB) / distance(A, C);
+        double alpha = Math.acos(cosAlpha);
+        double tipAlpha = Math.toRadians((180 - 2 * Math.toDegrees(alpha)) / 2);
+        float distCXp = (float) (mArrowRadius / Math.cos(tipAlpha));
+        float distCYp = (float) (mArrowRadius * Math.cos(tipAlpha));
+        float distYYp = (float) (Math.sin(tipAlpha) * mArrowRadius);
+        
+        float r = (float) (Math.tan(tipAlpha) * mArrowRadius);
+        
+        PointF circleCenter = new PointF(rect.right - distCXp - strokeWidth, C.y);
+        
+        path.lineTo(rect.right - distCYp - strokeWidth, circleCenter.y - distYYp);
+        
+        float angle = (float) (180 - 90 - Math.toDegrees(alpha));
+        
+        path.arcTo(new RectF(
+                        circleCenter.x,
+                        circleCenter.y - distYYp,
+                        circleCenter.x + r,
+                        circleCenter.y + distYYp
+                ),
+                270 + angle, 180 - 2 * angle);
+        
+        path.lineTo(rect.right - mArrowWidth - strokeWidth, mArrowPosition + mArrowHeight - strokeWidth / 2);
+        //endArrow
+        
         path.lineTo(rect.right - mArrowWidth - strokeWidth, rect.bottom - mCornersRadius - strokeWidth);
         
         path.arcTo(new RectF(rect.right - mCornersRadius - mArrowWidth, rect.bottom - mCornersRadius,
@@ -345,8 +406,39 @@ class Bubble extends Drawable {
                 rect.right - strokeWidth, rect.bottom - mArrowHeight - strokeWidth), 0, 90);
         
         path.lineTo(rect.left + mArrowWidth + mArrowPosition - (strokeWidth / 2), rect.bottom - mArrowHeight - strokeWidth);
-        path.lineTo(rect.left + mArrowPosition + mArrowWidth / 2, rect.bottom - strokeWidth - strokeWidth);
-        path.lineTo(rect.left + mArrowPosition + (strokeWidth / 2), rect.bottom - mArrowHeight - strokeWidth);
+        
+        float baseX = rect.left + mArrowWidth + mArrowPosition;
+        
+        //Draw Arrow
+        PointF A = new PointF(baseX - (strokeWidth / 2), rect.bottom - mArrowHeight - strokeWidth);
+        PointF C = new PointF(baseX - mArrowWidth / 2, rect.bottom - strokeWidth);
+        PointF MidAB = new PointF(baseX - mArrowWidth / 2, rect.bottom - mArrowHeight - strokeWidth);
+        
+        double cosAlpha = distance(A, MidAB) / distance(A, C);
+        double alpha = Math.acos(cosAlpha);
+        double tipAlpha = Math.toRadians((180 - 2 * Math.toDegrees(alpha)) / 2);
+        float distCXp = (float) (mArrowRadius / Math.cos(tipAlpha));
+        float distCYp = (float) (mArrowRadius * Math.cos(tipAlpha));
+        float distYYp = (float) (Math.sin(tipAlpha) * mArrowRadius);
+        
+        float r = (float) (Math.tan(tipAlpha) * mArrowRadius);
+        
+        PointF circleCenter = new PointF(C.x, rect.bottom - distCXp - strokeWidth);
+        
+        path.lineTo(circleCenter.x + distYYp, rect.bottom - distCYp - strokeWidth);
+        
+        float angle = (float) (180 - 90 - Math.toDegrees(alpha));
+        
+        path.arcTo(new RectF(
+                        circleCenter.x - distYYp,
+                        circleCenter.y,
+                        circleCenter.x + distYYp,
+                        circleCenter.y + r),
+                angle, 180 - 2 * angle);
+   
+        path.lineTo(rect.left + mArrowPosition + strokeWidth / 2, rect.bottom - mArrowHeight - strokeWidth);
+        //endArrow
+        
         path.lineTo(rect.left + Math.min(mCornersRadius, mArrowPosition) + strokeWidth, rect.bottom - mArrowHeight - strokeWidth);
         
         path.arcTo(new RectF(rect.left + strokeWidth, rect.bottom - mCornersRadius - mArrowHeight,

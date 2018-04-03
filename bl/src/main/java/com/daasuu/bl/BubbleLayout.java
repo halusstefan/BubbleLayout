@@ -24,6 +24,7 @@ public class BubbleLayout extends FrameLayout {
     private float mCornersRadius;
     private float mArrowHeight;
     private float mArrowPosition;
+    private float mArrowRadius;
     private int mBubbleColor;
     private float mStrokeWidth;
     private int mStrokeColor;
@@ -47,6 +48,7 @@ public class BubbleLayout extends FrameLayout {
         mCornersRadius = a.getDimension(R.styleable.BubbleLayout_bl_cornersRadius, 0);
         mArrowPosition = a.getDimension(R.styleable.BubbleLayout_bl_arrowPosition,
                 convertDpToPixel(12, context));
+        mArrowRadius = a.getDimension(R.styleable.BubbleLayout_bl_arrowRadius, 0);
         mBubbleColor = a.getColor(R.styleable.BubbleLayout_bl_bubbleColor, Color.WHITE);
 
         mStrokeWidth =
@@ -88,7 +90,7 @@ public class BubbleLayout extends FrameLayout {
                 break;
         }
         mBubble = new Bubble(rectF, mArrowWidth, mCornersRadius, mArrowHeight, mArrowPosition,
-                mStrokeWidth, mStrokeColor, mBubbleColor, mArrowDirection);
+                mStrokeWidth, mStrokeColor, mBubbleColor, mArrowDirection, mArrowRadius);
     }
 
     private void initPadding() {
@@ -212,6 +214,12 @@ public class BubbleLayout extends FrameLayout {
         requestLayout();
         return this;
     }
+    
+    public BubbleLayout setArrowRadius(float arrowRadius) {
+        mArrowRadius = arrowRadius;
+        requestLayout();
+        return this;
+    }
 
     public ArrowDirection getArrowDirection() {
         return mArrowDirection;
@@ -243,5 +251,9 @@ public class BubbleLayout extends FrameLayout {
 
     public int getStrokeColor() {
         return mStrokeColor;
+    }
+    
+    public float getArrowRadius() {
+        return mArrowRadius;
     }
 }
