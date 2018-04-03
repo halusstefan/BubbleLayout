@@ -173,6 +173,7 @@ public class BubbleLayout extends FrameLayout {
         resetPadding();
         mArrowWidth = arrowWidth;
         initPadding();
+        requestLayout();
         return this;
     }
 
@@ -186,6 +187,7 @@ public class BubbleLayout extends FrameLayout {
         resetPadding();
         mArrowHeight = arrowHeight;
         initPadding();
+        requestLayout();
         return this;
     }
 
